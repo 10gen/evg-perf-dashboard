@@ -9,6 +9,7 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
     $scope.defaultBranch = $window.appData.default_branch;
     $scope.defaultBaselines = $window.appData.default_baselines;
     $scope.hidePassingTasks = true;
+    $scope.showUnfinishedTasks = true;
   }
 
   if ($window.plugins){
@@ -53,6 +54,7 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
     $scope.version = $window.version.Version;
     $scope.project = $scope.version.id;
     $scope.hidePassingTasks = false;
+    $scope.showUnfinishedTasks = false;
   }
 
 
@@ -240,6 +242,43 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
       }
     };
 
+    var getUnfinishedTasks = function(project){
+      if ($scope.projects[project].unfinishedTasks) {
+        return
+      }
+      var versionId = ""; 
+      var projectId = project;
+      if ($scope.version){
+        projectId = $scope.version.Project;
+        versionId = $scope.version.Id;
+      } else {
+        versionId = $scope.projects[project].commitInfo.version_id;
+      }
+      if (!$scope.projects[project].unfinishedTasks) {
+        $http.get("/plugin/dashboard/tasks/project/" + project + "/version/" + versionId)
+        .success(function(d){
+          if (d != null){
+            var dashData = $scope.projects[project].dashboardData;
+            var allTasks = d;
+            var existingTasks = _.reduce(dashData, function(existingTasks, data){
+              if (!existingTasks[data.task_name]) {
+                existingTasks[data.task_name] = [];
+              }
+              existingTasks[data.task_name].push(data.variant);
+              return existingTasks;
+            }, {})
+             // compute the intersection of all tasks and ones that have finished
+            $scope.projects[project].unfinishedTasks = _.mapObject(allTasks, function(variantList, taskName){
+              if (existingTasks[taskName]){
+                return _.difference(variantList, existingTasks[taskName]);
+              } 
+              return variantList;
+            })          
+        }
+      })
+    }
+    }
+
 
 
   // gets the dashbord data and populates the baseline list.
@@ -254,6 +293,7 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
               // take the first task's data and get the set of baselines from it 
               // NOTE: this is assuming that tasks all have the same baselines.
               setInitialBaselines(d, $scope.version.id);
+              getUnfinishedTasks($scope.version.id);
             }
       })
   };
@@ -284,6 +324,8 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
         $scope.projects[projectName].commitInfo= d.commit_info;
         $scope.projects[projectName].endOfVersion = d.last_revision;
         $scope.projects[projectName].counts = {};
+        $scope.projects[projectName].unfinishedTasks = {};
+        getUnfinishedTasks(projectName);
         setInitialBaselines(d.json_tasks, projectName);
       })
 
@@ -318,5 +360,12 @@ mciModule.directive('pageButtons', function(){
   return {
     restrict: 'E',
     templateUrl:'/plugin/dashboard/static/partials/page_buttons.html',
+  }
+})
+
+mciModule.directive('unfinishedTasks', function(){
+  return {
+    restrict: 'E',
+    templateUrl:'/plugin/dashboard/static/partials/unfinished_tasks.html',
   }
 })

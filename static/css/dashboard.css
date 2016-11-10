@@ -56,3 +56,13 @@
 .tickets {
   width: 12%;
 }
+
+.unfinished-task {
+  color: #bfbfbe;
+}
+
+.no-data {
+  text-align: right;
+  font-size: small;
+  color: gray;
+}
