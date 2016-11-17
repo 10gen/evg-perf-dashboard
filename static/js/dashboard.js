@@ -7,6 +7,7 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
   if ($window.appData){
     $scope.branches = $window.appData.branches;
     $scope.defaultBranch = $window.appData.default_branch;
+    $scope.defaultBaselines = $window.appData.default_baselines;
     $scope.hidePassingTasks = true;
   }
 
@@ -34,11 +35,21 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
     _.each($scope.dashboardProjects, function(projectName){
       $scope.projects[projectName] = {};
     })
+
+    // check the location hash for project baselines
+    _.each($scope.branches, function(projects, branchName){
+      _.each(projects, function(projectName){
+        if ($location.search()[projectName]){
+          $scope.defaultBaselines[projectName] = $location.search()[projectName];
+        }
+      })
+    })
   }
+
+
 
   // if there is a version, this is a version level dashboard. 
   if ($window.version) {
-    console.log("here")
     $scope.version = $window.version.Version;
     $scope.project = $scope.version.id;
     $scope.hidePassingTasks = false;
@@ -145,6 +156,7 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
 
     $scope.setBaseline = function(baseline, project){
       $scope.projects[project].currentBaseline = baseline;
+      $location.search(project, baseline);
       getTestStatuses(project);
     };
 
@@ -216,6 +228,13 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
         if (_.contains($scope.projects[project].baselines, $scope.projects[project].currentBaseline)){
           $scope.setBaseline($scope.projects[project].currentBaseline, project);
           return
+        }
+        if ($scope.defaultBaselines[project]){
+          var defBaseline = $scope.defaultBaselines[project]
+          if (_.contains($scope.projects[project].baselines, defBaseline)){
+            $scope.setBaseline(defBaseline, project);
+            return
+          }
         }
         $scope.setBaseline($scope.projects[project].baselines[0], project);
       }

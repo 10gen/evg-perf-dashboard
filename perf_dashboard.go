@@ -34,9 +34,13 @@ type DashboardData struct {
 }
 
 // DashboardAppData is the data that is returned from calling the app level data function
+// Branches is a mapping from a branch name to the projects in that branch
+// DefaultBranch is the branch that should show up if it exists.
+// DefaultBaselines is a mapping from project to baseline that is default
 type DashboardAppData struct {
-	Branches      map[string][]string `json:"branches"`
-	DefaultBranch string              `json:"default_branch"`
+	Branches         map[string][]string `json:"branches"`
+	DefaultBranch    string              `json:"default_branch"`
+	DefaultBaselines map[string]string   `json:"default_baselines"`
 }
 
 // Name implements Plugin Interface.
@@ -49,9 +53,16 @@ func (pdp *PerfDashboardPlugin) GetUIHandler() http.Handler { return nil }
 func (pdp *PerfDashboardPlugin) GetAppPluginInfo() *plugin.UIPage {
 	data := func(context plugin.UIContext) (interface{}, error) {
 		defaultBranch := context.Request.FormValue("branch")
+		defaultBaselines := map[string]string{}
+		for _, projects := range pdp.Branches {
+			for _, projectName := range projects {
+				defaultBaselines[projectName] = context.Request.FormValue(projectName)
+			}
+		}
 		dashboardData := DashboardAppData{
-			DefaultBranch: defaultBranch,
-			Branches:      pdp.Branches,
+			DefaultBranch:    defaultBranch,
+			DefaultBaselines: defaultBaselines,
+			Branches:         pdp.Branches,
 		}
 
 		return dashboardData, nil
