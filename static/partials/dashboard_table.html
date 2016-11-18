@@ -1,4 +1,4 @@
-<div class="dashboardTable" ng-repeat="task in getData(project)">
+<div class="dashboardTable" ng-repeat="task in getData(project) | orderBy:sortTables(project)">
   <div class="row">
   <h4> <a ng-href="/task/[[task.task_id]]"> [[task.task_name]] on [[task.variant]]</a> 
     <span class="numPassing" ng-show="allPassing(project,task)">All Passing</span>

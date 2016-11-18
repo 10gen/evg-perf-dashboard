@@ -171,6 +171,12 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
       return;
     }
 
+    $scope.sortTables = function(project){
+      return function(task){
+        return $scope.allPassing(project, task);
+      }
+    }
+
     var getTestStatuses = function(project) {
       var status = {}
         // for each task in the data, get the metrics of the selected baseline. 
