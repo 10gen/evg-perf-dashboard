@@ -231,7 +231,7 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
           $scope.setBaseline($scope.projects[project].currentBaseline, project);
           return
         }
-        if ($scope.defaultBaselines[project]){
+        if ($scope.defaultBaselines && $scope.defaultBaselines[project]){
           var defBaseline = $scope.defaultBaselines[project]
           if (_.contains($scope.projects[project].baselines, defBaseline)){
             $scope.setBaseline(defBaseline, project);
