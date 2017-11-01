@@ -167,7 +167,7 @@ func getTasksForVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	taskMap := getVariantsWithCommand("json.send", project)
-	plugin.WriteJSON(w, http.StatusOK, taskMap)
+	util.WriteJSON(w, http.StatusOK, taskMap)
 }
 
 // hasCommand returns true if the command name exists in the command
