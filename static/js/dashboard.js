@@ -321,7 +321,8 @@ mciModule.controller('DashboardController', function PerfController($scope, $win
       $scope.projects[projectName].skip = skip;
       $scope.projects[projectName].currentBaseline = currentBaseline;
       $http.get("/plugin/json/version/latest/" + projectName + "/dashboard?skip="+ skip).then(
-      function(d){
+      function(resp){
+        var d = resp.data;
         $scope.projects[projectName].dashboardData = d.json_tasks;
         $scope.projects[projectName].commitInfo= d.commit_info;
         $scope.projects[projectName].endOfVersion = d.last_revision;
